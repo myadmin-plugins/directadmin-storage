@@ -1,0 +1,40 @@
+{
+    "name": "detain/myadmin-directadmin-storage",
+    "type": "myadmin-plugin",
+    "description": "Directadmin Storage Class",
+    "keywords": [
+        "directadmin",
+        "administration",
+        "storage"
+    ],
+    "license": "LGPL-2.1-only",
+    "authors": [
+        {
+            "name": "Joe Huss",
+            "homepage": "https:\/\/my.interserver.net\/"
+        }
+    ],
+    "config": {
+        "bin-dir": "vendor\/bin",
+        "minimum-stability": "dev"
+    },
+    "require": {
+        "php": ">=5.0.0",
+        "ext-curl": "*",
+        "symfony/event-dispatcher": ">=2.8.26",
+        "detain/myadmin-plugin-installer": "dev-master"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "*",
+        "phpunit/phpunit-mock-objects": "*",
+        "vlucas/phpdotenv": "*",
+        "codeclimate/php-test-reporter": "dev-master",
+        "satooshi/php-coveralls": "*",
+        "codacy/coverage": "dev-master"
+    },
+    "autoload": {
+        "psr-4": {
+            "Detain\\MyAdminDirectAdminStorage\\": "src/"
+        }
+    }
+}
