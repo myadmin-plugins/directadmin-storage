@@ -12,7 +12,7 @@ use Symfony\Component\EventDispatcher\GenericEvent;
  */
 class Plugin
 {
-	public static $name = 'DirectAdmin Webhosting';
+	public static $name = 'DirectAdmin Storage';
 	public static $description = 'web-based control panel makes site management a piece of cake. Empower your customers and offer them the ability to administer every facet of their website using simple, point-and-click software.  More info at https://DirectAdmin.com/';
 	public static $help = '';
 	public static $module = 'backups';
@@ -342,7 +342,6 @@ class Plugin
 		 * @var \MyAdmin\Plugins\Loader $this->loader
 		 */
 		$loader = $event->getSubject();
-		$loader->add_requirement('api_auto_directadmin_login', '/../vendor/detain/myadmin-directadmin-webhosting/src/api.php');
 	}
 
 	/**
@@ -357,6 +356,6 @@ class Plugin
 		$settings->setTarget('module');
 		$settings->add_select_master(_(self::$module), _('Default Servers'), self::$module, 'new_website_directadmin_server', _('Default DirectAdmin Setup Server'), NEW_WEBSITE_DIRECTADMIN_SERVER, get_service_define('WEB_DIRECTADMIN'));
 		$settings->add_select_master(_(self::$module), _('Default Servers'), self::$module, 'new_website_directadmin_storage_server', _('Default DirectAdmin Storage Server'), NEW_WEBSITE_DIRECTADMIN_STORAGE_SERVER, get_service_define('WEB_STORAGE'));
-		$settings->add_dropdown_setting(self::$module, _('Out of Stock'), 'outofstock_webhosting_directadmin', _('Out Of Stock DirectAdmin Webhosting'), _('Enable/Disable Sales Of This Type'), $settings->get_setting('OUTOFSTOCK_WEBHOSTING_DIRECTADMIN'), ['0', '1'], ['No', 'Yes']);
+		$settings->add_dropdown_setting(self::$module, _('Out of Stock'), 'outofstock_storage_directadmin', _('Out Of Stock DirectAdmin Storage'), _('Enable/Disable Sales Of This Type'), $settings->get_setting('OUTOFSTOCK_STORAGE_DIRECTADMIN'), ['0', '1'], ['No', 'Yes']);
 	}
 }
