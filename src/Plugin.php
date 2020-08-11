@@ -13,7 +13,7 @@ use Symfony\Component\EventDispatcher\GenericEvent;
 class Plugin
 {
 	public static $name = 'DirectAdmin Storage';
-	public static $description = 'web-based control panel makes site management a piece of cake. Empower your customers and offer them the ability to administer every facet of their website using simple, point-and-click software.  More info at https://DirectAdmin.com/';
+	public static $description = 'web-based control panel makes site management a piece of cake. Empower your customers and offer them the ability to administer every facet of their backup using simple, point-and-click software.  More info at https://DirectAdmin.com/';
 	public static $help = '';
 	public static $module = 'backups';
 	public static $type = 'service';
@@ -51,7 +51,7 @@ class Plugin
 		 * @var \ServiceHandler $subject
 		 */
 		//$subject = $event->getSubject();
-		api_register('api_auto_directadmin_login', ['id' => 'int'], ['return' => 'result_status'], 'Logs into DirectAdmin for the given website id and returns a unique logged-in url.  The status will be "ok" if successful, or "error" if there was any problems status_text will contain a description of the problem if any.');
+		api_register('api_auto_directadmin_storage_login', ['id' => 'int'], ['return' => 'result_status'], 'Logs into DirectAdmin for the given backup id and returns a unique logged-in url.  The status will be "ok" if successful, or "error" if there was any problems status_text will contain a description of the problem if any.');
 	}
 
 	/**
@@ -60,7 +60,7 @@ class Plugin
 	 */
 	public static function getActivate(GenericEvent $event)
 	{
-		if (in_array($event['type'], [get_service_define('WEB_DIRECTADMIN'), get_service_define('DIRECTADMIN_STORAGE')])) {
+		if (in_array($event['type'], [get_service_define('DIRECTADMIN_STORAGE')])) {
 			$serviceClass = $event->getSubject();
 			myadmin_log('myadmin', 'info', 'DirectAdmin Activation', __LINE__, __FILE__, self::$module, $serviceClass->getId());
 			$serviceTypes = run_event('get_service_types', false, self::$module);
@@ -69,12 +69,9 @@ class Plugin
 			$serverdata = get_service_master($serviceClass->getServer(), self::$module);
 			$hash = $serverdata[$settings['PREFIX'].'_key'];
 			$ip = $serverdata[$settings['PREFIX'].'_ip'];
-			$hostname = $serviceClass->getHostname();
-			if (trim($hostname) == '') {
-				$hostname = $serviceClass->getId().'.server.com';
-			}
-			$password = website_get_password($serviceClass->getId());
-			$username = get_new_webhosting_username($serviceClass->getId(), $hostname, $serviceClass->getServer());
+			$hostname = 'st'.$serviceClass->getId().'.is.cc';
+			$password = backup_get_password($serviceClass->getId());
+			$username = 'st'.$serviceClass->getId();
 			if (in_array('reseller', explode(',', $event['field1']))) {
 				$reseller = true;
 				$apiCmd = '/CMD_API_ACCOUNT_RESELLER';
@@ -184,11 +181,9 @@ class Plugin
 			$db = get_module_db(self::$module);
 			$username = $db->real_escape($username);
 			$db->query("update {$settings['TABLE']} set {$settings['PREFIX']}_ip='{$siteIp}', {$settings['PREFIX']}_username='{$username}' where {$settings['PREFIX']}_id='{$serviceClass->getId()}'", __LINE__, __FILE__);
-			website_welcome_email($serviceClass->getId());
+			backup_welcome_email($serviceClass->getId());
 			function_requirements('add_dns_record');
 			$result = add_dns_record(14426, 'st'.$serviceClass->getId(), $siteIp, 'A', 86400, 0, true);
-			function_requirements('add_dns_record');
-			$result = add_dns_record(14426, 'wh'.$serviceClass->getId(), $siteIp, 'A', 86400, 0, true);
 			$event['success'] = true;
 			$event->stopPropagation();
 		}
@@ -200,7 +195,7 @@ class Plugin
 	 */
 	public static function getReactivate(GenericEvent $event)
 	{
-		if (in_array($event['type'], [get_service_define('WEB_DIRECTADMIN'), get_service_define('DIRECTADMIN_STORAGE')])) {
+		if (in_array($event['type'], [get_service_define('DIRECTADMIN_STORAGE')])) {
 			$serviceClass = $event->getSubject();
 			$settings = get_module_settings(self::$module);
 			$serverdata = get_service_master($serviceClass->getServer(), self::$module);
@@ -230,7 +225,7 @@ class Plugin
 	 */
 	public static function getDeactivate(GenericEvent $event)
 	{
-		if (in_array($event['type'], [get_service_define('WEB_DIRECTADMIN'), get_service_define('DIRECTADMIN_STORAGE')])) {
+		if (in_array($event['type'], [get_service_define('DIRECTADMIN_STORAGE')])) {
 			$serviceClass = $event->getSubject();
 			myadmin_log('myadmin', 'info', 'DirectAdmin Deactivation', __LINE__, __FILE__, self::$module, $serviceClass->getId());
 			$settings = get_module_settings(self::$module);
@@ -264,7 +259,7 @@ class Plugin
 	 */
 	public static function getTerminate(GenericEvent $event)
 	{
-		if (in_array($event['type'], [get_service_define('WEB_DIRECTADMIN'), get_service_define('DIRECTADMIN_STORAGE')])) {
+		if (in_array($event['type'], [get_service_define('DIRECTADMIN_STORAGE')])) {
 			$serviceClass = $event->getSubject();
 			myadmin_log('myadmin', 'info', 'DirectAdmin Termination', __LINE__, __FILE__, self::$module, $serviceClass->getId());
 			$settings = get_module_settings(self::$module);
@@ -305,7 +300,7 @@ class Plugin
 	 */
 	public static function getChangeIp(GenericEvent $event)
 	{
-		if (in_array($event['type'], [get_service_define('WEB_DIRECTADMIN'), get_service_define('DIRECTADMIN_STORAGE')])) {
+		if (in_array($event['type'], [get_service_define('DIRECTADMIN_STORAGE')])) {
 			$serviceClass = $event->getSubject();
 			$settings = get_module_settings(self::$module);
 			$directadmin = new DirectAdmin(FANTASTICO_USERNAME, FANTASTICO_PASSWORD);
@@ -354,8 +349,7 @@ class Plugin
 		 **/
 		$settings = $event->getSubject();
 		$settings->setTarget('module');
-		$settings->add_select_master(_(self::$module), _('Default Servers'), self::$module, 'new_website_directadmin_server', _('Default DirectAdmin Setup Server'), NEW_WEBSITE_DIRECTADMIN_SERVER, get_service_define('WEB_DIRECTADMIN'));
-		$settings->add_select_master(_(self::$module), _('Default Servers'), self::$module, 'new_website_directadmin_storage_server', _('Default DirectAdmin Storage Server'), NEW_WEBSITE_DIRECTADMIN_STORAGE_SERVER, get_service_define('DIRECTADMIN_STORAGE'));
+		$settings->add_select_master(_(self::$module), _('Default Servers'), self::$module, 'new_storage_directadmin_server', _('Default DirectAdmin Setup Server'), NEW_WEBSITE_DIRECTADMIN_SERVER, get_service_define('DIRECTADMIN_STORAGE'));
 		$settings->add_dropdown_setting(self::$module, _('Out of Stock'), 'outofstock_storage_directadmin', _('Out Of Stock DirectAdmin Storage'), _('Enable/Disable Sales Of This Type'), $settings->get_setting('OUTOFSTOCK_STORAGE_DIRECTADMIN'), ['0', '1'], ['No', 'Yes']);
 	}
 }
