@@ -259,8 +259,8 @@ class Plugin
 	 */
 	public static function getTerminate(GenericEvent $event)
 	{
+		$serviceClass = $event->getSubject();
 		if (in_array($event['type'], [get_service_define('DIRECTADMIN_STORAGE')])) {
-			$serviceClass = $event->getSubject();
 			myadmin_log('myadmin', 'info', 'DirectAdmin Termination', __LINE__, __FILE__, self::$module, $serviceClass->getId());
 			$settings = get_module_settings(self::$module);
 			$serverdata = get_service_master($serviceClass->getServer(), self::$module);
