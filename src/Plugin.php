@@ -69,7 +69,7 @@ class Plugin
 			$serverdata = get_service_master($serviceClass->getServer(), self::$module);
 			$hash = $serverdata[$settings['PREFIX'].'_key'];
 			$ip = $serverdata[$settings['PREFIX'].'_ip'];
-			$hostname = 'st'.$serviceClass->getId().'.is.cc';
+			$hostname = 'st'.$serviceClass->getId().'.ispot.cc';
 			$password = backup_get_password($serviceClass->getId());
 			$username = 'st'.$serviceClass->getId();
 			if (in_array('reseller', explode(',', $event['field1']))) {
