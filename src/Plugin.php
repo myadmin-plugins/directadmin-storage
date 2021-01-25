@@ -349,7 +349,7 @@ class Plugin
 		 **/
 		$settings = $event->getSubject();
 		$settings->setTarget('module');
-		$settings->add_select_master(_(self::$module), _('Default Servers'), self::$module, 'new_storage_directadmin_server', _('Default DirectAdmin Setup Server'), NEW_WEBSITE_DIRECTADMIN_SERVER, get_service_define('DIRECTADMIN_STORAGE'));
+		$settings->add_select_master(_(self::$module), _('Default Servers'), self::$module, 'new_website_directadmin_storage_server', _('Default DirectAdmin Setup Server'), NEW_WEBSITE_DIRECTADMIN_STORAGE_SERVER, get_service_define('DIRECTADMIN_STORAGE'));
 		$settings->add_dropdown_setting(self::$module, _('Out of Stock'), 'outofstock_storage_directadmin', _('Out Of Stock DirectAdmin Storage'), _('Enable/Disable Sales Of This Type'), $settings->get_setting('OUTOFSTOCK_STORAGE_DIRECTADMIN'), ['0', '1'], ['No', 'Yes']);
 	}
 }
