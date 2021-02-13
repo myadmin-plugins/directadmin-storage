@@ -214,7 +214,8 @@ class Plugin
 			$sock->query($apiCmd, $apiOptions);
 			$result = $sock->fetch_parsed_body();
 			request_log(self::$module, $serviceClass->getCustid(), __FUNCTION__, 'directadmin', $apiCmd, $apiOptions, $result, $serviceClass->getId());
-			myadmin_log('myadmin', 'info', 'DirectAdmin '.$apiCmd.' Response: '.json_encode($result), __LINE__, __FILE__, self::$module, $serviceClass->getId());
+			myadmin_log('myadmin', 'info', 'DirectAdmin '.$apiCmd.' '.json_encode($apiOptions).' Response: '.json_encode($result), __LINE__, __FILE__, self::$module, $serviceClass->getId());
+			$event['success'] = true;
 			$event->stopPropagation();
 		}
 	}
@@ -246,8 +247,9 @@ class Plugin
 				$sock->query($apiCmd, $apiOptions);
 				$result = $sock->fetch_parsed_body();
 				request_log(self::$module, $serviceClass->getCustid(), __FUNCTION__, 'directadmin', $apiCmd, $apiOptions, $result, $serviceClass->getId());
-				myadmin_log('myadmin', 'info', 'DirectAdmin '.$apiCmd.' Response: '.json_encode($result), __LINE__, __FILE__, self::$module, $serviceClass->getId());
+				myadmin_log('myadmin', 'info', 'DirectAdmin '.$apiCmd.' '.json_encode($apiOptions).' Response: '.json_encode($result), __LINE__, __FILE__, self::$module, $serviceClass->getId());
 			}
+			$event['success'] = true;
 			$event->stopPropagation();
 		}
 	}
