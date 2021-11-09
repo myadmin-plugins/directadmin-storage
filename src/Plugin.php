@@ -99,7 +99,7 @@ class Plugin
 				'passwd2' => $password,
 				'domain' => $hostname,
 				'ip' => $siteIp,
-				'notify' => 'yes'
+				'notify' => 'no'
 			];
 			if (strpos($serviceTypes[$serviceClass->getType()]['services_field2'], ',') === false) {
 				$apiOptions['package'] = $serviceTypes[$serviceClass->getType()]['services_field2'];
