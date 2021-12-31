@@ -41,7 +41,7 @@ class Plugin
 			'ui.menu' => [__CLASS__, 'getMenu']
 		];
 	}
-	
+
 	/**
 	 * @param \Symfony\Component\EventDispatcher\GenericEvent $event
 	 */
