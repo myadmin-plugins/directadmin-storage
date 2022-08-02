@@ -131,8 +131,8 @@ class Plugin
                     }
                 }
             } */
-            if (!is_null($result) && isset($result['result']) && mb_substr($result['result'][0]['statusmsg'], 0, 19) == 'Sorry, the password') {
-                while (mb_substr($result['result'][0]['statusmsg'], 0, 19) == 'Sorry, the password') {
+            if (!is_null($result) && isset($result['details']) && mb_substr($result['details'], 0, 19) == 'Sorry, the password') {
+                while (mb_substr($result['details'], 0, 19) == 'Sorry, the password') {
                     $password = generateRandomString(10, 2, 2, 2, 1);
                     $apiOptions['passwd'] = $password;
                     $apiOptions['passwd2'] = $password;
@@ -146,8 +146,8 @@ class Plugin
                 }
                 $GLOBALS['tf']->history->add($settings['PREFIX'], 'password', $serviceClass->getId(), $options['password']);
             }
-            if (!is_null($result) && isset($result['result']) && $result['result'][0]['statusmsg'] == 'Sorry, a group for that username already exists.') {
-                while ($result['result'][0]['statusmsg'] == 'Sorry, a group for that username already exists.') {
+            if (!is_null($result) && isset($result['details']) && $result['details'] == 'Sorry, a group for that username already exists.') {
+                while ($result['details'] == 'Sorry, a group for that username already exists.') {
                     $username .= 'a';
                     $username = mb_substr($username, 1);
                     $apiOptions['username'] = $username;
@@ -160,8 +160,8 @@ class Plugin
                     }
                 }
             }
-            if (!is_null($result) && isset($result['result']) && preg_match("/^.*This system already has an account named .{1,3}{$username}.{1,3}\.$/m", $result['result'][0]['statusmsg']) || preg_match('/^.*The name of another account on this server has the same initial/m', $result['result'][0]['statusmsg'])) {
-                while (preg_match("/^.*This system already has an account named .{1,3}{$username}.{1,3}\.$/m", $result['result'][0]['statusmsg']) || preg_match('/^.*The name of another account on this server has the same initial/m', $result['result'][0]['statusmsg'])) {
+            if (!is_null($result) && isset($result['details']) && preg_match("/^.*This system already has an account named .{1,3}{$username}.{1,3}\.$/m", $result['details']) || preg_match('/^.*The name of another account on this server has the same initial/m', $result['details'])) {
+                while (preg_match("/^.*This system already has an account named .{1,3}{$username}.{1,3}\.$/m", $result['details']) || preg_match('/^.*The name of another account on this server has the same initial/m', $result['details'])) {
                     $username .= 'a';
                     $username = mb_substr($username, 1);
                     $apiOptions['username'] = $username;
