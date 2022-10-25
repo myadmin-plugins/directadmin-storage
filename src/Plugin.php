@@ -244,6 +244,8 @@ class Plugin
                 $result = $sock->fetch_parsed_body();
                 request_log(self::$module, $serviceClass->getCustid(), __FUNCTION__, 'directadmin', $apiCmd, $apiOptions, $result, $serviceClass->getId());
                 myadmin_log('myadmin', 'info', 'DirectAdmin '.$apiCmd.' '.json_encode($apiOptions).' Response: '.json_encode($result), __LINE__, __FILE__, self::$module, $serviceClass->getId());
+                $serviceClass->setServerStatus('stopped')->save();
+                $GLOBALS['tf']->history->add($settings['TABLE'], 'change_server_status', 'stopped', $serviceClass->getId(), $serviceClass->getCustid());
             }
             $event['success'] = true;
             $event->stopPropagation();
