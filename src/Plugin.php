@@ -101,7 +101,9 @@ class Plugin
                 'ip' => $siteIp,
                 'notify' => 'no'
             ];
-            if (strpos($serviceTypes[$serviceClass->getType()]['services_field2'], ',') === false) {
+            if ($serviceTypes[$serviceClass->getType()]['services_field1']) {
+                $apiOptions['package'] = $serviceTypes[$serviceClass->getType()]['services_field1'];
+            } elseif (strpos($serviceTypes[$serviceClass->getType()]['services_field2'], ',') === false) {
                 $apiOptions['package'] = $serviceTypes[$serviceClass->getType()]['services_field2'];
             } else {
                 $fields = explode(',', $serviceTypes[$serviceClass->getType()]['services_field2']);
