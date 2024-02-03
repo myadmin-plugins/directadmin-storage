@@ -108,7 +108,7 @@ class Plugin
             } else {
                 $fields = explode(',', $serviceTypes[$serviceClass->getType()]['services_field2']);
                 foreach ($fields as $field) {
-                    list($key, $value) = explode('=', $field);
+                    [$key, $value] = explode('=', $field);
                     $apiOptions[$key] = $value;
                 }
             }
