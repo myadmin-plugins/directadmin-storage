@@ -70,7 +70,7 @@ class Plugin
             $hash = $serverdata[$settings['PREFIX'].'_key'];
             $ip = $serverdata[$settings['PREFIX'].'_ip'];
             $hostname = 'st'.$serviceClass->getId().'.ispot.cc';
-            $password = backup_get_password($serviceClass->getId());
+            $password = backup_get_password($serviceClass->getId(), $serviceClass->getCustid());
             $username = 'st'.$serviceClass->getId();
             if (in_array('reseller', explode(',', $event['field1']))) {
                 $reseller = true;
