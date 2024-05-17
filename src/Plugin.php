@@ -116,12 +116,6 @@ class Plugin
             $result = $sock->fetch_parsed_body();
             request_log(self::$module, $serviceClass->getCustid(), __FUNCTION__, 'directadmin', $apiCmd, $apiOptions, $result, $serviceClass->getId());
             myadmin_log('myadmin', 'info', 'DirectAdmin '.$apiCmd.' '.json_encode($apiOptions).' : '.json_encode($result), __LINE__, __FILE__, self::$module, $serviceClass->getId());
-            if ($result['error'] != "0") {
-                $event['success'] = false;
-                myadmin_log('directadmin', 'error', 'Error Creating User '.$username.' Site '.$hostname.' Text:'.$result['text'].' Details:'.$result['details'], __LINE__, __FILE__, self::$module, $serviceClass->getId());
-                $event->stopPropagation();
-                return;
-            }
             /* if ($serviceTypes[$serviceClass->getType()]['services_field2'] != '') {
                 $fields = explode(',', $serviceTypes[$serviceClass->getType()]['services_field2']);
                 foreach ($fields as $field) {
@@ -133,8 +127,8 @@ class Plugin
                     }
                 }
             } */
-            if (!is_null($result) && isset($result['details']) && mb_substr($result['details'], 0, 19) == 'Sorry, the password') {
-                while (mb_substr($result['details'], 0, 19) == 'Sorry, the password') {
+            if (!is_null($result) && isset($result['details']) && (mb_substr($result['details'], 0, 19) == 'Sorry, the password' || strpos($result['details'], 'Invalid Password') !== false)) {
+                while (mb_substr($result['details'], 0, 19) == 'Sorry, the password' || strpos($result['details'], 'Invalid Password') !== false) {
                     $password = generateRandomString(10, 2, 2, 2, 1);
                     $apiOptions['passwd'] = $password;
                     $apiOptions['passwd2'] = $password;
@@ -175,6 +169,12 @@ class Plugin
                     if ($result['error'] != "0") {
                     }
                 }
+            }
+            if ($result['error'] != "0") {
+                $event['success'] = false;
+                myadmin_log('directadmin', 'error', 'Error Creating User '.$username.' Site '.$hostname.' Text:'.$result['text'].' Details:'.$result['details'], __LINE__, __FILE__, self::$module, $serviceClass->getId());
+                $event->stopPropagation();
+                return;
             }
             $db = get_module_db(self::$module);
             $username = $db->real_escape($username);
