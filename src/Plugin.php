@@ -132,7 +132,7 @@ class Plugin
                     $password = generateRandomString(10, 2, 2, 2, 1);
                     $apiOptions['passwd'] = $password;
                     $apiOptions['passwd2'] = $password;
-                    myadmin_log('myadmin', 'info', "Trying Password {$apiOptions['password']}", __LINE__, __FILE__, self::$module, $serviceClass->getId());
+                    myadmin_log('myadmin', 'info', "Trying Password {$apiOptions['passwd']}", __LINE__, __FILE__, self::$module, $serviceClass->getId());
                     $sock->query($apiCmd, $apiOptions);
                     $result = $sock->fetch_parsed_body();
                     request_log(self::$module, $serviceClass->getCustid(), __FUNCTION__, 'directadmin', $apiCmd, $apiOptions, $result, $serviceClass->getId());
@@ -140,7 +140,7 @@ class Plugin
                     if ($result['error'] != "0") {
                     }
                 }
-                $GLOBALS['tf']->history->add($settings['PREFIX'], 'password', $serviceClass->getId(), $options['password']);
+                $GLOBALS['tf']->history->add($settings['PREFIX'], 'password', $serviceClass->getId(), $options['passwd']);
             }
             if (!is_null($result) && isset($result['details']) && $result['details'] == 'Sorry, a group for that username already exists.') {
                 while ($result['details'] == 'Sorry, a group for that username already exists.') {
