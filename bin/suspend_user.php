@@ -2,24 +2,29 @@
 
 use Detain\MyAdminDirectAdminWeb\HTTPSocket;
 
-require_once('../vendor/autoload.php');
+include_once __DIR__.'/../../../../include/functions.inc.php';
 
-$server_login="admin";
-$server_pass="admin_password";
-$server_host="da1.is.cc"; //where the API connects to
-$server_ssl="Y";
-$server_port=2222;
-
-$username='firstsit';
-
-$sock = new HTTPSocket();
-if ($server_ssl == 'Y') {
-    $sock->connect("ssl://".$server_host, $server_port);
-} else {
-    $sock->connect($server_host, $server_port);
+$db = get_module_db('backups');
+if (count($_SERVER['argv']) < 2) {
+    die("Call like {$_SERVER['argv'][0]} <hostname>\nwhere <hostname> is a backups server such as backups2004.interserver.net");
 }
+$db->query("select * from backup_masters where backup_name='".$db->real_escape($_SERVER['argv'][1])."'", __LINE__, __FILE__);
+function_requirements('whm_api');
+if ($db->num_rows() == 0) {
+    die("Invalid Server {$_SERVER['argv'][1]} passed, did not match any backups server name");
+}
+$db->next_record(MYSQL_ASSOC);
+echo "processing {$db->Record['backup_name']}\n";
+$server_name = $db->Record['backup_ip'];;
+$server_port = 2222;
+$password = $db->Record['backup_key'];
+$sock = new HTTPSocket();
+$sock->connect("ssl://{$server_name}", $server_port);
+//$sock->connect("http://{$server_name}", $server_port);
+//$sock->connect('http://'.$server_name, $server_port);
+$sock->set_login("admin", $password);
 
-$sock->set_login($server_login, $server_pass);
+$username= $_SERVER['argv'][2];
 
 $sock->query(
     '/CMD_API_SELECT_USERS',

@@ -4,7 +4,6 @@ use Detain\MyAdminDirectAdminWeb\HTTPSocket;
 
 include_once __DIR__.'/../../../../include/functions.inc.php';
 
-
 $db = get_module_db('backups');
 if (count($_SERVER['argv']) < 2) {
     die("Call like {$_SERVER['argv'][0]} <hostname>\nwhere <hostname> is a backups server such as backups2004.interserver.net");
