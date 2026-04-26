@@ -149,7 +149,7 @@ class Plugin
                     if ($result['error'] != "0") {
                     }
                 }
-                $GLOBALS['tf']->history->add($settings['PREFIX'], 'password', $serviceClass->getId(), $options['passwd']);
+                \MyAdmin\App::history()->add($settings['PREFIX'], 'password', $serviceClass->getId(), $options['passwd']);
             }
             if (!is_null($result) && isset($result['details']) && $result['details'] == 'Sorry, a group for that username already exists.') {
                 while ($result['details'] == 'Sorry, a group for that username already exists.') {
@@ -256,7 +256,7 @@ class Plugin
                 request_log(self::$module, $serviceClass->getCustid(), __FUNCTION__, 'directadmin', $apiCmd, $apiOptions, $result, $serviceClass->getId());
                 myadmin_log('myadmin', 'info', 'DirectAdmin '.$apiCmd.' '.json_encode($apiOptions).' Response: '.json_encode($result), __LINE__, __FILE__, self::$module, $serviceClass->getId());
                 $serviceClass->setServerStatus('stopped')->save();
-                $GLOBALS['tf']->history->add($settings['TABLE'], 'change_server_status', 'stopped', $serviceClass->getId(), $serviceClass->getCustid());
+                \MyAdmin\App::history()->add($settings['TABLE'], 'change_server_status', 'stopped', $serviceClass->getId(), $serviceClass->getCustid());
             }
             $event['success'] = true;
             $event->stopPropagation();
@@ -322,7 +322,7 @@ class Plugin
                 $event['status'] = 'error';
                 $event['status_text'] = 'Error Code '.$result['faultcode'].': '.$result['fault'];
             } else {
-                $GLOBALS['tf']->history->add($settings['TABLE'], 'change_ip', $event['newip'], $serviceClass->getId(), $serviceClass->getCustid());
+                \MyAdmin\App::history()->add($settings['TABLE'], 'change_ip', $event['newip'], $serviceClass->getId(), $serviceClass->getCustid());
                 $serviceClass->set_ip($event['newip'])->save();
                 $event['status'] = 'ok';
                 $event['status_text'] = 'The IP Address has been changed.';
