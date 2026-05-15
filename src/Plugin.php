@@ -87,7 +87,7 @@ class Plugin
             $sock->set_login('admin', $hash);
             $sock->query('/CMD_API_SHOW_RESELLER_IPS');
             $result = $sock->fetch_parsed_body();
-            if (!in_array($siteIp, $result['list'])) {
+            if (!empty($result['list']) && !in_array($siteIp, $result['list'])) {
                 $siteIp = $result['list'][0];
             }
             $apiOptions = [
