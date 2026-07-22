@@ -82,45 +82,58 @@ class Plugin
                 $siteIp = $ip;
             }
             $server_ssl="Y";
-            $sock = new HTTPSocket();
-            $sock->connect(($server_ssl == 'Y' ? 'ssl://' : '').$ip, 2222);
-            $sock->set_login('admin', $hash);
-            $sock->query('/CMD_API_SHOW_RESELLER_IPS');
-            $result = $sock->fetch_parsed_body();
-            if (!empty($result['list']) && !in_array($siteIp, $result['list'])) {
-                $siteIp = $result['list'][0];
-            }
-            $apiOptions = [
-                'action' => 'create',
-                'add' => 'Submit',
-                'username' => $username,
-                'email' => $event['email'],
-                'passwd' => $password,
-                'passwd2' => $password,
-                'domain' => $hostname,
-                'ip' => $siteIp,
-                'notify' => 'no'
-            ];
-            if (trim($serviceTypes[$serviceClass->getType()]['services_field1']) != '') {
-                $apiOptions['package'] = $serviceTypes[$serviceClass->getType()]['services_field1'];
-            } elseif (strpos($serviceTypes[$serviceClass->getType()]['services_field2'], ',') === false) {
-                $apiOptions['package'] = $serviceTypes[$serviceClass->getType()]['services_field2'];
-            } else {
-                $fields = explode(',', $serviceTypes[$serviceClass->getType()]['services_field2']);
-                foreach ($fields as $field) {
-                    [$key, $value] = explode('=', $field);
-                    $apiOptions[$key] = $value;
+            try {
+                $sock = new HTTPSocket();
+                $sock->connect(($server_ssl == 'Y' ? 'ssl://' : '') . $ip, 2222);
+                $sock->set_login('admin', $hash);
+                $sock->query('/CMD_API_SHOW_RESELLER_IPS');
+                $result = $sock->fetch_parsed_body();
+                if (!empty($result['list']) && !in_array($siteIp, $result['list'])) {
+                    $siteIp = $result['list'][0];
                 }
+                $apiOptions = [
+                    'action' => 'create',
+                    'add' => 'Submit',
+                    'username' => $username,
+                    'email' => $event['email'],
+                    'passwd' => $password,
+                    'passwd2' => $password,
+                    'domain' => $hostname,
+                    'ip' => $siteIp,
+                    'notify' => 'no'
+                ];
+                if (trim($serviceTypes[$serviceClass->getType()]['services_field1']) != '') {
+                    $apiOptions['package'] = $serviceTypes[$serviceClass->getType()]['services_field1'];
+                } elseif (strpos($serviceTypes[$serviceClass->getType()]['services_field2'], ',') === false) {
+                    $apiOptions['package'] = $serviceTypes[$serviceClass->getType()]['services_field2'];
+                } else {
+                    $fields = explode(',', $serviceTypes[$serviceClass->getType()]['services_field2']);
+                    foreach ($fields as $field) {
+                        [$key, $value] = explode('=', $field);
+                        $apiOptions[$key] = $value;
+                    }
+                }
+                $sock->query($apiCmd, $apiOptions);
+                $result = $sock->fetch_parsed_body();
+            } catch (\Exception $e) {
+                $error_msg = 'Error Creating User '.$username.' Site '.$hostname.' '.$e->getMessage();
+                $event['success'] = false;
+                $event['status'] = 'error';
+                $event['status_text'] = $error_msg;
+                myadmin_log('directadmin', 'error', $error_msg, __LINE__, __FILE__, self::$module, $serviceClass->getId());
+                $event->stopPropagation();
+                return;
             }
-            $sock->query($apiCmd, $apiOptions);
-            $result = $sock->fetch_parsed_body();
             request_log(self::$module, $serviceClass->getCustid(), __FUNCTION__, 'directadmin', $apiCmd, $apiOptions, $result, $serviceClass->getId());
             myadmin_log('myadmin', 'info', 'DirectAdmin '.$apiCmd.' '.json_encode($apiOptions).' : '.json_encode($result), __LINE__, __FILE__, self::$module, $serviceClass->getId());
             if ($result['error'] != "0") {
                 if ((isset($result['text']) && trim($result['text']) != '') || (isset($result['details']) && trim($result['details']) != '')) {
+                    $error_msg = 'Error Creating User '.$username.' Site '.$hostname.' Text:'.$result['text'].' Details:'.$result['details'];
                     $event['success'] = false;
+                    $event['status'] = 'error';
+                    $event['status_text'] = $error_msg;
                     chatNotify('Failed [Storage '.$serviceClass->getId().'](https://my.interserver.net/admin/view_backup?id='.$serviceClass->getId().') Activation Text:'.$result['text'].' Details:'.$result['details'], 'int-dev');
-                    myadmin_log('directadmin', 'error', 'Error Creating User '.$username.' Site '.$hostname.' Text:'.$result['text'].' Details:'.$result['details'], __LINE__, __FILE__, self::$module, $serviceClass->getId());
+                    myadmin_log('directadmin', 'error', $error_msg, __LINE__, __FILE__, self::$module, $serviceClass->getId());
                     $event->stopPropagation();
                     return;
                 }
@@ -180,8 +193,11 @@ class Plugin
                 }
             }
             if ($result['error'] != "0") {
+                $error_msg = 'Error Creating User '.$username.' Site '.$hostname.' Text:'.$result['text'].' Details:'.$result['details'];
                 $event['success'] = false;
-                myadmin_log('directadmin', 'error', 'Error Creating User '.$username.' Site '.$hostname.' Text:'.$result['text'].' Details:'.$result['details'], __LINE__, __FILE__, self::$module, $serviceClass->getId());
+                $event['status'] = 'error';
+                $event['status_text'] = $error_msg;
+                myadmin_log('directadmin', 'error', $error_msg, __LINE__, __FILE__, self::$module, $serviceClass->getId());
                 $event->stopPropagation();
                 return;
             }
@@ -192,6 +208,8 @@ class Plugin
             function_requirements('add_dns_record');
             $result = add_dns_record(14426, 'st'.$serviceClass->getId(), $siteIp, 'A', 86400, 0, true);
             $event['success'] = true;
+            $event['status'] = 'ok';
+            $event['status_text'] = '';
             $event->stopPropagation();
         }
     }
@@ -209,17 +227,27 @@ class Plugin
             $hash = $serverdata[$settings['PREFIX'].'_key'];
             $ip = $serverdata[$settings['PREFIX'].'_ip'];
             $server_ssl="Y";
-            $sock = new HTTPSocket();
-            $sock->connect(($server_ssl == 'Y' ? 'ssl://' : '').$ip, 2222);
-            $sock->set_login('admin', $hash);
-            $apiCmd = '/CMD_API_SELECT_USERS';
-            $apiOptions = [
-                'location' => 'CMD_SELECT_USERS',
-                'dounsuspend' => 'y',
-                'select0' => $serviceClass->getUsername()
-            ];
-            $sock->query($apiCmd, $apiOptions);
-            $result = $sock->fetch_parsed_body();
+            try {
+                $sock = new HTTPSocket();
+                $sock->connect(($server_ssl == 'Y' ? 'ssl://' : '') . $ip, 2222);
+                $sock->set_login('admin', $hash);
+                $apiCmd = '/CMD_API_SELECT_USERS';
+                $apiOptions = [
+                    'location' => 'CMD_SELECT_USERS',
+                    'dounsuspend' => 'y',
+                    'select0' => $serviceClass->getUsername()
+                ];
+                $sock->query($apiCmd, $apiOptions);
+                $result = $sock->fetch_parsed_body();
+            } catch (\Exception $e) {
+                $error_msg = 'DirectAdmin '.$apiCmd.' '.json_encode($apiOptions).' : '.$e->getMessage();
+                myadmin_log('directadmin', 'error', $error_msg, __LINE__, __FILE__, self::$module, $serviceClass->getId());
+                $event['success'] = false;
+                $event['status'] = 'error';
+                $event['status_text'] = $error_msg;
+                $event->stopPropagation();
+                return;
+            }
             request_log(self::$module, $serviceClass->getCustid(), __FUNCTION__, 'directadmin', $apiCmd, $apiOptions, $result, $serviceClass->getId());
             myadmin_log('myadmin', 'info', 'DirectAdmin '.$apiCmd.' '.json_encode($apiOptions).' Response: '.json_encode($result), __LINE__, __FILE__, self::$module, $serviceClass->getId());
             $event['success'] = true;
@@ -242,17 +270,27 @@ class Plugin
                 $hash = $serverdata[$settings['PREFIX'].'_key'];
                 $ip = $serverdata[$settings['PREFIX'].'_ip'];
                 $server_ssl="Y";
-                $sock = new HTTPSocket();
-                $sock->connect(($server_ssl == 'Y' ? 'ssl://' : '').$ip, 2222);
-                $sock->set_login('admin', $hash);
-                $apiCmd = '/CMD_API_SELECT_USERS';
-                $apiOptions = [
-                    'location' => 'CMD_SELECT_USERS',
-                    'suspend' => 'Suspend',
-                    'select0' => $serviceClass->getUsername()
-                ];
-                $sock->query($apiCmd, $apiOptions);
-                $result = $sock->fetch_parsed_body();
+                try {
+                    $sock = new HTTPSocket();
+                    $sock->connect(($server_ssl == 'Y' ? 'ssl://' : '') . $ip, 2222);
+                    $sock->set_login('admin', $hash);
+                    $apiCmd = '/CMD_API_SELECT_USERS';
+                    $apiOptions = [
+                        'location' => 'CMD_SELECT_USERS',
+                        'suspend' => 'Suspend',
+                        'select0' => $serviceClass->getUsername()
+                    ];
+                    $sock->query($apiCmd, $apiOptions);
+                    $result = $sock->fetch_parsed_body();
+                } catch (\Exception $e) {
+                    $error_msg = 'DirectAdmin '.$apiCmd.' '.json_encode($apiOptions).' : '.$e->getMessage();
+                    myadmin_log('directadmin', 'error', $error_msg, __LINE__, __FILE__, self::$module, $serviceClass->getId());
+                    $event['success'] = false;
+                    $event['status'] = 'error';
+                    $event['status_text'] = $error_msg;
+                    $event->stopPropagation();
+                    return;
+                }
                 request_log(self::$module, $serviceClass->getCustid(), __FUNCTION__, 'directadmin', $apiCmd, $apiOptions, $result, $serviceClass->getId());
                 myadmin_log('myadmin', 'info', 'DirectAdmin '.$apiCmd.' '.json_encode($apiOptions).' Response: '.json_encode($result), __LINE__, __FILE__, self::$module, $serviceClass->getId());
                 $serviceClass->setServerStatus('stopped')->save();
@@ -278,18 +316,26 @@ class Plugin
             $hash = $serverdata[$settings['PREFIX'].'_key'];
             $ip = $serverdata[$settings['PREFIX'].'_ip'];
             if (trim($serviceClass->getUsername()) != '') {
-                $server_ssl="Y";
-                $sock = new HTTPSocket();
-                $sock->connect(($server_ssl == 'Y' ? 'ssl://' : '').$ip, 2222);
-                $sock->set_login('admin', $hash);
-                $apiCmd = '/CMD_API_SELECT_USERS';
-                $apiOptions = [
-                    'confirmed' => 'Confirm',
-                    'delete' => 'yes',
-                    'select0' => $serviceClass->getUsername()
-                ];
-                $sock->query($apiCmd, $apiOptions);
-                $result = $sock->fetch_parsed_body();
+                try {
+                    $server_ssl = "Y";
+                    $sock = new HTTPSocket();
+                    $sock->connect(($server_ssl == 'Y' ? 'ssl://' : '') . $ip, 2222);
+                    $sock->set_login('admin', $hash);
+                    $apiCmd = '/CMD_API_SELECT_USERS';
+                    $apiOptions = [
+                        'confirmed' => 'Confirm',
+                        'delete' => 'yes',
+                        'select0' => $serviceClass->getUsername()
+                    ];
+                    $sock->query($apiCmd, $apiOptions);
+                    $result = $sock->fetch_parsed_body();
+                } catch (\Exception $e) {
+                    $error_msg = 'DirectAdmin '.$apiCmd.' '.json_encode($apiOptions).' : '.$e->getMessage();
+                    myadmin_log('directadmin', 'error', $error_msg, __LINE__, __FILE__, self::$module, $serviceClass->getId());
+                    $event['success'] = false;
+                    $event['status'] = 'error';
+                    $event['status_text'] = $error_msg;
+                }
                 request_log(self::$module, $serviceClass->getCustid(), __FUNCTION__, 'directadmin', $apiCmd, $apiOptions, $result, $serviceClass->getId());
                 myadmin_log('myadmin', 'info', 'DirectAdmin '.$apiCmd.' Response: '.json_encode($result), __LINE__, __FILE__, self::$module, $serviceClass->getId());
             }
