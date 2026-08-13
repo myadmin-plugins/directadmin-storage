@@ -1,6 +1,6 @@
 ---
 name: phpunit-test
-description: Adds a PHPUnit 9 test file following conventions in tests/. Uses namespace Detain\MyAdminDirectAdminStorage\Tests, extends TestCase, bootstraps via tests/bootstrap.php. Trigger phrases: 'add test', 'write test for', 'test coverage', new src/ class added. Covers unit tests for standalone functions (like UnhtmlentitiesTest.php) and structural/reflection tests for classes (like PluginTest.php, HTTPSocketTest.php). Do NOT use for test runner configuration or phpunit.xml changes. NOTE: for a plugin's contract/behavioral tests (tests/ContractTest.php, the shared harness, composer myadmin:scaffold-tests) use the plugin-contract-tests skill instead — this skill's reflection-only guidance predates that harness.
+description: Adds a PHPUnit 9 test file following conventions in tests/. Uses namespace Detain\MyAdminDirectAdminStorage\Tests, extends TestCase, bootstraps via tests/bootstrap.php. Trigger phrases: 'add test', 'write test for', 'test coverage', new src/ class added. Covers unit tests for standalone functions (like UnhtmlentitiesTest.php) and structural/reflection tests for classes (like PluginTest.php, HTTPSocketTest.php). Do NOT use for test runner configuration or phpunit.xml changes. For a plugin's contract or behavioral tests (tests/ContractTest.php, the shared harness, composer myadmin:scaffold-tests) use the plugin-contract-tests skill instead — this skill's reflection-only guidance predates that harness.
 ---
 <!-- myadmin-contract-harness-notice -->
 > ### ⚠️ Read this before the rest of the file
